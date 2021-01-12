@@ -1,0 +1,15 @@
+{
+  "name": "vendor_name/back.com",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "а",
+      "email": "email@example.com"
+    }
+  ],
+  "require": {
+    
+  }
+}
