@@ -1,42 +1,95 @@
 <template>
     <div class="result">
+        <div class="for-values">
         <div class="value">
             <h3>Стоимость недвижимости</h3>
-            <p>1000000 руб</p>
+            <p>{{priceObject}} руб</p>
         </div>
         <div class="value">
             <h3>Первоначальный взнос</h3>
-            <p>1000000 руб</p>
+            <p>{{firstPayment}} руб</p>
         </div>
         <hr>
         <div class="value">
             <h3>Ежемесячный платеж</h3>
-            <p>1000000 руб</p>
+            <p>{{paymentPerMonth}} руб</p>
         </div>
         <div class="value">
             <h3>Общая сумма выплат</h3>
-            <p>1000000 руб</p>
+            <p>{{priceTotal}} руб</p>
         </div>
         <hr>
         <div class="value">
             <h3>Процентная ставка</h3>
-            <p>1000000 руб</p>
-        </div>
-        <div class="value">
-        </div>
-        <div class="block">
-            <a class="button7" href="#">Получить отчет</a>
+            <p>{{percent}} руб</p>
         </div>
     </div>
+        <div class="block">
+            <a class="button7" @click="testApi" href="#">Получить отчет</a>
+        </div>
+    </div>
+
 </template>
 
 <script>
+
     export default {
         name: 'Result',
         props: {
-
+            firstPayment:{
+                type:Number,
+                default:0
+            },
+            paymentPerMonth:{
+                type:Number,
+                default:0
+            },
+            priceObject:{
+                type:Number,
+                default:0
+            },
+            priceTotal:{
+                type:Number,
+                default:0
+            },
+            percent:{
+                type:Number,
+                default:0
+            },
+            info:{
+                type:String,
+                default:"empty"
+            },
+            errors:{
+                type:Object,
+                default: {
+                    error:false,
+                    message:''
+                }
+            },
         },
-
+        methods:{
+            testApi:function () {
+                console.log('start query');
+                const axios=require('axios');
+                axios.get('http://back.com:9500/api/public/test.php')
+                    .then(response => {
+                        this.info=response.data;
+                        if (!response.data.error) {
+                            this.firstPayment = response.data.firstPayment;
+                            this.paymentPerMonth = response.data.paymentPerMonth;
+                            this.priceObject = response.data.priceObject;
+                            this.priceTotal = response.data.priceTotal;
+                            this.percent = response.data.percent;
+                        }else {
+                            this.errors.error=true;
+                            this.errors.message=response.data.message;
+                        }
+                    });
+                console.log(this.info);
+                console.log('end query');
+            }
+        }
     }
 </script>
 
@@ -61,15 +114,16 @@
         width: 100%;
     }
     .result{
+        background: linear-gradient(60deg, #8df1d5, #00ccff);
+        border-radius: 20px;
+        color: #b9c1ca;
+    }
+    .for-values{
         display: flex;
         flex-direction: row;
         justify-content: space-around;
         align-items: flex-start;
         flex-wrap: wrap;
-        background: linear-gradient(60deg, #8df1d5, #00ccff);
-        border-radius: 20px;
-        min-width: 200px;
-        color: #b9c1ca;
     }
     a.button7 {
         font-weight: 700;

@@ -36,7 +36,7 @@ export default {
 }
 .component{
   width: 45%;
-  min-width: 300px;
+  min-width: 350px;
 }
 
 </style>

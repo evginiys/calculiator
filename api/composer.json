@@ -10,6 +10,11 @@
     }
   ],
   "require": {
-    
+    "symfony/dotenv": "^3.4"
+  },
+"autoload": {
+  "psr-4": {
+    "Calculator\\": "src/"
   }
+}
 }

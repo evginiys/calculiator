@@ -1,7 +1,7 @@
 <template>
     <div class="fields">
         <div class="block">
-            <option>Выбирете нужный тип ипотеки</option>
+            <option>Выбирете тип ипотеки</option>
             <select v-model="selected">
                 <option v-for="variant in variants" :key="variant.id" >
                     {{ variant.name }}
@@ -19,7 +19,7 @@
         <div class="block">
             <h3>Первый взнос:</h3>
             <div class="procents">
-                <input :value="firstPayment"/><span>{{first}}%</span>
+                <input :value="firstPaymentInRub"/><span>{{first}}%</span>
             </div>
             <input type="range" :min="firstMin" :max="firstMax" step="1" v-model="first">
             <div>
@@ -41,9 +41,9 @@
     export default {
         name: 'Fields',
         props: {
-            variants:{
-                type:Array,
-                default:function() {
+            variants: {
+                type: Array,
+                default: function () {
                     return [
                         {id: 1, name: "test1"},
                         {id: 2, name: "test2"},
@@ -53,9 +53,9 @@
                 }
 
             },
-            selected:{
-              type:String,
-              default:"выбирете вариант ипотеки"
+            selected: {
+                type: String,
+                default: "выбирете вариант ипотеки"
             },
             first: {
                 type: Number,
@@ -93,9 +93,85 @@
                 type: Number,
                 default: 300
             },
+
+            paymentPerMonth: {
+                type: Number,
+                default: 0
+            },
+            priceObject: {
+                type: Number,
+                default: 0
+            },
+            priceTotal: {
+                type: Number,
+                default: 0
+            },
+            percent: {
+                type: Number,
+                default: 0
+            },
+            info: {
+                type: String,
+                default: "empty"
+            },
+            errors: {
+                type: Object,
+                default: function () {
+                    return {
+                        error: false,
+                        message: ''
+                    }
+                },
+            }
+        },
+        created() {
+            console.log('start query created');
+            const axios=require('axios');
+            axios.get('http://back.com:9500/api/public/types.php')
+                .then(response => {
+                    this.firstPayment = response.data.firstPayment;
+                    this.paymentPerMonth = response.data.paymentPerMonth;
+                    this.priceObject = response.data.priceObject;
+                    this.priceTotal = response.data.priceTotal;
+                    this.percent = response.data.percent;
+                    this.info=response.data;
+                });
+            console.log(this.info);
+            console.log('end query');
+        },
+        updated() {
+            this.getResult();
+        },
+        methods:{
+            getResult:function ( data=null) {
+                let params=new URLSearchParams();
+                if (data) {
+                    data.forEach(function (item,index) {
+                        params.append(index, item);
+                    })
+                }
+                console.log('params to getResult Request'.params);
+                const axios=require('axios');
+                axios.get('http://back.com:9500/api/public/test.php',{params})
+                    .then(response => {
+                        this.info=response.data;
+                        if (!response.data.error) {
+                            this.firstPayment = response.data.firstPayment;
+                            this.paymentPerMonth = response.data.paymentPerMonth;
+                            this.priceObject = response.data.priceObject;
+                            this.priceTotal = response.data.priceTotal;
+                            this.percent = response.data.percent;
+                        }else {
+                            this.errors.error=true;
+                            this.errors.message=response.data.message;
+                        }
+                    });
+                console.log(this.info);
+                console.log('end query');
+            }
         },
         computed: {
-            firstPayment: function () {
+            firstPaymentInRub: function () {
                 return this.price * this.first / 100;
             }
         },
@@ -160,7 +236,6 @@
     .fields{
         background: #b9c1ca;
         border-radius: 20px;
-        min-width: 200px;
         padding: 20px;
     }
 </style>
