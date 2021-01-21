@@ -6,8 +6,11 @@ use Exception;
 use PDO;
 use PDOException;
 
-class Connection
+class MortgageModel
 {
+    public const TYPE_USUAL = 0;
+    public const TYPE_FAMILY = 1;
+    public const TYPE_MILITARY = 2;
     private static ?PDO $connection = null;
 
     public function __construct()
@@ -21,8 +24,8 @@ class Connection
     public static function getTypes(): ?array
     {
         $query = self::getInstance()->query("SELECT * FROM types");
-        if ($query->execute()) {
-            throw new Exception($query->errorInfo());
+        if (!$query->execute()) {
+            throw new Exception(json_encode($query->errorInfo()));
         }
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -41,12 +44,27 @@ class Connection
 
     /**
      * @param int $typeId
-     * @param int $interType
      *
      * @return array|null
      * @throws Exception
      */
-    public static function getOption(int $typeId, int $interType = 0): ?array
+    public static function getIntertypes(int $typeId): array
+    {
+        $query = self::getInstance()->query("SELECT DISTINCT intertype FROM options WHERE  type_id=:typeId ");
+        if (!$query->execute([':typeId' => $typeId])) {
+            throw new Exception(json_encode($query->errorInfo()));
+        }
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param int $typeId
+     * @param int $interType
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function getOption(int $typeId, int $interType = 0): array
     {
         $query = self::getInstance()->prepare(
             'SELECT * FROM options WHERE intertype=:intertype AND type_id=:typeid'

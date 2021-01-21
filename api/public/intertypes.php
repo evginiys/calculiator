@@ -2,13 +2,13 @@
 
 require_once '../vendor/autoload.php';
 
+use Calculator\Calculate\Exception\InvalidDataFromDbException;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\Dotenv\Dotenv;
 use Calculator\Db\MortgageModel;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 try {
     $log = new Logger('report');
@@ -17,21 +17,33 @@ try {
 
     $dotenv = new Dotenv();
     $dotenv->load(dirname(__DIR__) . DIRECTORY_SEPARATOR . ".env");
-    $data = MortgageModel::getTypes();
-    $response = new JsonResponse();
     $request = Request::createFromGlobals();
-    $log->info('incoming data types',[$request->query->all(),'path'=>$request->getBasePath()]);
-    $response->headers->set('Access-Control-Allow-Origin', '*');
-    $response->headers->set('Access-Control-Allow-Methods', 'GET, POST');
-    $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With');
-    $response->headers->set('Content-Type', 'application/json');
+    $log->info('incoming data intertypes',[$request->query->all(),'path'=>$request->getBasePath()]);
+    if (!$request->query->has('typeId')) {
+        throw new InvalidArgumentException('Not found typeId argument');
+    }
+    $typeId = $request->query->get('typeId');
+    if (is_numeric($typeId)) {
+        $typeId = 0 + $typeId;
+        if (!is_int($typeId) or $typeId <= 0) {
+            throw new InvalidArgumentException('TypeId is incorrect');
+        }
+    } else {
+        throw new InvalidArgumentException('TypeId is incorrect');
+    }
+    $data = MortgageModel::getIntertypes($typeId);
+    if (!key_exists(0, $data)  or empty($data[0])) {
+        throw new InvalidDataFromDbException('Not found Intertypes');
+    }
+    $response = new JsonResponse();
 
     $response->setData(['data' => $data, 'errors' => ['error' => false, 'message' => '']]);
-    $response->send();
+
 } catch (Exception $e) {
-    $log->error('error types', ['trace error' => $e->getTraceAsString()]);
+    $log->error('Error intertypes', ['trace error' => $e->getTraceAsString()]);
     $response = new JsonResponse();
     $response->setData(['data' => [], 'errors' => ['error' => true, 'message' => $e->getMessage()]]);
+    $response->setStatusCode(400);
 } finally {
     if ($e) {
         $response->setStatusCode(400);
