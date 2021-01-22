@@ -1,0 +1,6 @@
+.idea
+/api/vendor
+/front/node_modules
+/api/tests/EmailTest.php
+/api/src/Email.php
+/api/log
