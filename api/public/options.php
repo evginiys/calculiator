@@ -12,13 +12,13 @@ use Symfony\Component\HttpFoundation\Request;
 
 try {
     $log = new Logger('report');
-    $log->pushHandler(new StreamHandler('../log/request.log', Logger::INFO));
+    $log->pushHandler(new StreamHandler('../log/request.log', Logger::DEBUG));
     $log->pushHandler(new StreamHandler('../log/error.log', Logger::ERROR, false));
 
     $dotenv = new Dotenv();
     $dotenv->load(dirname(__DIR__) . DIRECTORY_SEPARATOR . ".env");
     $request = Request::createFromGlobals();
-    $log->info('incoming data option',[$request->query->all(),'path'=>$request->getBasePath()]);
+    $log->info('incoming data option', [$request->query->all(), 'path' => $request->getBasePath()]);
     if (!$request->query->has('typeId')) {
         throw new InvalidArgumentException('Not found typeId argument');
     }
@@ -33,19 +33,18 @@ try {
     }
 
     if ($request->query->has('intertype')) {
-        $interType=$request->query->get('intertype');
-    }else {
+        $interType = $request->query->get('intertype');
+    } else {
         $interType = MortgageModel::TYPE_USUAL;
     }
 
-    $data = MortgageModel::getOption($typeId,$interType);
-    if (!key_exists(0, $data)  or empty($data[0])) {
+    $data = MortgageModel::getOption($typeId, $interType);
+    if (!key_exists(0, $data) or empty($data[0])) {
         throw new InvalidDataFromDbException('Not found option');
     }
     $response = new JsonResponse();
 
     $response->setData(['data' => $data, 'errors' => ['error' => false, 'message' => '']]);
-
 } catch (Exception $e) {
     $log->error('Error option', [' error' => $e->getMessage()]);
     $response = new JsonResponse();
@@ -58,7 +57,7 @@ try {
     if ($e) {
         $response->setStatusCode(400);
         $response->send();
-    }else{
+    } else {
         $response->send();
     }
 }

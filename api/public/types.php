@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 try {
     $log = new Logger('report');
-    $log->pushHandler(new StreamHandler('../log/request.log', Logger::INFO));
+    $log->pushHandler(new StreamHandler('../log/request.log', Logger::DEBUG));
     $log->pushHandler(new StreamHandler('../log/error.log', Logger::ERROR, false));
 
     $dotenv = new Dotenv();
@@ -20,7 +20,7 @@ try {
     $data = MortgageModel::getTypes();
     $response = new JsonResponse();
     $request = Request::createFromGlobals();
-    $log->info('incoming data types',[$request->query->all(),'path'=>$request->getBasePath()]);
+    $log->info('incoming data types', [$request->query->all(), 'path' => $request->getBasePath()]);
     $response->headers->set('Access-Control-Allow-Origin', '*');
     $response->headers->set('Access-Control-Allow-Methods', 'GET, POST');
     $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With');
@@ -39,7 +39,7 @@ try {
     if ($e) {
         $response->setStatusCode(400);
         $response->send();
-    }else{
+    } else {
         $response->send();
     }
 }

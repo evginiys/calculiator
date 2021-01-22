@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 try {
     $log = new Logger('report');
-    $log->pushHandler(new StreamHandler('../log/request.log', Logger::INFO));
+    $log->pushHandler(new StreamHandler('../log/request.log', Logger::DEBUG));
     $log->pushHandler(new StreamHandler('../log/error.log', Logger::ERROR, false));
 
     $dotenv = new Dotenv();
