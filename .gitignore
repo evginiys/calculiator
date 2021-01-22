@@ -4,3 +4,4 @@
 /api/tests/EmailTest.php
 /api/src/Email.php
 /api/log
+/api/log/request.log
