@@ -11,6 +11,8 @@
 //import HelloWorld from './components/HelloWorld.vue'
 import Fields from './components/Fields.vue'
 import Result from './components/Result.vue'
+// import Bus from "./components/Bus";
+// var bus = new Bus();
 export default {
   name: 'App',
   components: {

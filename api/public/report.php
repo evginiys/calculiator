@@ -143,11 +143,13 @@ try {
     $result = ['data' => [], 'errors' => ['error' => true, 'message' => $e->getMessage()]];
     $response->setData($result);
 } finally {
+    $response->headers->set('Access-Control-Allow-Origin', '*');
+    $response->headers->set('Access-Control-Allow-Methods', 'GET, POST');
+    $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With');
     if ($e) {
         $response->setStatusCode(400);
-        $response->headers->set('Access-Control-Allow-Origin', '*');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST');
-        $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With');
+        $response->send();
+    }else{
         $response->send();
     }
 }

@@ -18,7 +18,7 @@ try {
     $dotenv = new Dotenv();
     $dotenv->load(dirname(__DIR__) . DIRECTORY_SEPARATOR . ".env");
     $request = Request::createFromGlobals();
-    $log->info('incoming data intertypes',[$request->query->all(),'path'=>$request->getBasePath()]);
+    $log->info('incoming data option',[$request->query->all(),'path'=>$request->getBasePath()]);
     if (!$request->query->has('typeId')) {
         throw new InvalidArgumentException('Not found typeId argument');
     }
@@ -31,25 +31,33 @@ try {
     } else {
         throw new InvalidArgumentException('TypeId is incorrect');
     }
-    $data = MortgageModel::getIntertypes($typeId);
+
+    if ($request->query->has('intertype')) {
+        $interType=$request->query->get('intertype');
+    }else {
+        $interType = MortgageModel::TYPE_USUAL;
+    }
+
+    $data = MortgageModel::getOption($typeId,$interType);
     if (!key_exists(0, $data)  or empty($data[0])) {
-        throw new InvalidDataFromDbException('Not found Intertypes');
+        throw new InvalidDataFromDbException('Not found option');
     }
     $response = new JsonResponse();
 
     $response->setData(['data' => $data, 'errors' => ['error' => false, 'message' => '']]);
 
 } catch (Exception $e) {
-    $log->error('Error intertypes', ['trace error' => $e->getTraceAsString()]);
+    $log->error('Error option', [' error' => $e->getMessage()]);
     $response = new JsonResponse();
     $response->setData(['data' => [], 'errors' => ['error' => true, 'message' => $e->getMessage()]]);
+    $response->setStatusCode(400);
 } finally {
     $response->headers->set('Access-Control-Allow-Origin', '*');
     $response->headers->set('Access-Control-Allow-Methods', 'GET, POST');
     $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With');
     if ($e) {
         $response->setStatusCode(400);
-       $response->send();
+        $response->send();
     }else{
         $response->send();
     }

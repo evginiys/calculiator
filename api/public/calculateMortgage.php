@@ -60,6 +60,11 @@ try {
     $response = new JsonResponse();
 
     $data=$calculator->calculate();
+    $data['price']=$calculator->getPrice();
+    $data['overPayment']=$calculator->getOverpayment();
+    $data['term']=$calculator->getTerm();
+    $data['firstPayment']=$calculator->getFirstPayment();
+    $data['percent']=$calculator->getYearPercent();
     $result=['data'=>$data,'errors'=>['error'=>false,'message'=>'']];
     $response->setData($result);
 
@@ -69,21 +74,23 @@ try {
     $result = ['data' => [], 'errors' => ['error' => true, 'message' => $e->getMessage()]];
     $response->setData($result);
 } catch (InvalidArgumentException $e) {
-    $log->error('Incorrect incoming data calculateMortgage', ['trace error' => $e->getTraceAsString()]);
+    $log->error('Incorrect incoming data calculateMortgage', ['trace error' => $e->getTraceAsString(),'request'=>$request->query->all()]);
     $response = new JsonResponse();
     $result = ['data' => [], 'errors' => ['error' => true, 'message' => $e->getMessage()]];
     $response->setData($result);
 }catch (Exception $e) {
-    $log->error('Error calculateMortgage', ['trace error' => $e->getTraceAsString()]);
+    $log->error('Error calculateMortgage', ['trace error' => $e->getMessage()]);
     $response = new JsonResponse();
     $result=['data'=>[],'errors'=>['error'=>true,'message'=>$e->getMessage()]];
     $response->setData($result);
 } finally {
+    $response->headers->set('Access-Control-Allow-Origin', '*');
+    $response->headers->set('Access-Control-Allow-Methods', 'GET, POST');
+    $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With');
     if ($e) {
         $response->setStatusCode(400);
-        $response->headers->set('Access-Control-Allow-Origin', '*');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST');
-        $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With');
+      $response->send();
+    }else{
         $response->send();
     }
 }

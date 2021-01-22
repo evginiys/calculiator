@@ -50,7 +50,7 @@ class MortgageModel
      */
     public static function getIntertypes(int $typeId): array
     {
-        $query = self::getInstance()->query("SELECT DISTINCT intertype FROM options WHERE  type_id=:typeId ");
+        $query = self::getInstance()->query("SELECT  intertype FROM options WHERE  type_id=:typeId ");
         if (!$query->execute([':typeId' => $typeId])) {
             throw new Exception(json_encode($query->errorInfo()));
         }

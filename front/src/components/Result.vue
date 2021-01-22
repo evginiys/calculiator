@@ -6,8 +6,8 @@
             <p>{{priceObject}} руб</p>
         </div>
         <div class="value">
-            <h3>Первоначальный взнос</h3>
-            <p>{{firstPayment}} руб</p>
+            <h3>переплата</h3>
+            <p>{{overPayment}} руб</p>
         </div>
         <hr>
         <div class="value">
@@ -21,74 +21,84 @@
         <hr>
         <div class="value">
             <h3>Процентная ставка</h3>
-            <p>{{percent}} руб</p>
+            <p>{{percent}}</p>
         </div>
+            <div class="value">
+                <h3>Длительность</h3>
+                <p>{{term}} мес</p>
+            </div>
     </div>
         <div class="block">
-            <a class="button7" @click="testApi" href="#">Получить отчет</a>
+            <a class="button7"  :href="this.linkExel">Отчет xlsx</a>
+            <a class="button7"  :href="this.linkPdf">Отчет pdf</a>
         </div>
     </div>
-
 </template>
 
 <script>
-
+import Bus from "../Bus";
     export default {
         name: 'Result',
+        data: function(){
+            return {
+                firstPayment:0,
+                paymentPerMonth:0,
+                priceObject:0,
+                priceTotal:0,
+                percent:0,
+                term:0,
+                overPayment:0,
+                params:'',
+                link:process.env.VUE_APP_SERVER_ROOT+"report.php",
+                linkExel:process.env.VUE_APP_SERVER_ROOT+"report.php",
+                linkPdf:process.env.VUE_APP_SERVER_ROOT+"report.php",
+                errors:{
+                        error:false,
+                        message:''
+                },
+            }
+        },
         props: {
-            firstPayment:{
-                type:Number,
-                default:0
-            },
-            paymentPerMonth:{
-                type:Number,
-                default:0
-            },
-            priceObject:{
-                type:Number,
-                default:0
-            },
-            priceTotal:{
-                type:Number,
-                default:0
-            },
-            percent:{
-                type:Number,
-                default:0
-            },
+
             info:{
                 type:String,
                 default:"empty"
-            },
-            errors:{
-                type:Object,
-                default: {
-                    error:false,
-                    message:''
-                }
-            },
+            }
         },
-        methods:{
-            testApi:function () {
+        created() {
+            Bus.$on('getResult',(data)=> {
+                this.params=data;
+                this.linkPdf=this.link+'?'+(new URLSearchParams(this.params));
+                this.params['xlsx']=1;
+                this.linkExel=this.link+'?'+(new URLSearchParams(this.params));
+                console.log(new URLSearchParams(this.params));
+                this.result();
+            });
+        },
+        methods: {
+            result: function () {
                 console.log('start query');
-                const axios=require('axios');
-                axios.get('http://back.com:9500/api/public/test.php')
+                const axios = require('axios');
+                let params=new URLSearchParams(this.params);
+                axios.get(process.env.VUE_APP_SERVER_ROOT+"calculateMortgage.php",{params})
                     .then(response => {
-                        this.info=response.data;
+                        console.log(response.data)
                         if (!response.data.error) {
-                            this.firstPayment = response.data.firstPayment;
-                            this.paymentPerMonth = response.data.paymentPerMonth;
-                            this.priceObject = response.data.priceObject;
-                            this.priceTotal = response.data.priceTotal;
-                            this.percent = response.data.percent;
-                        }else {
-                            this.errors.error=true;
-                            this.errors.message=response.data.message;
+                            this.firstPayment = response.data.data.firstPayment;
+                            this.paymentPerMonth = response.data.data.everyMonthPayment;
+                            this.priceObject = response.data.data.price;
+                            this.priceTotal = response.data.data.totalPay;
+                            this.percent = response.data.data.percent;
+                            this.overPayment=response.data.data.overPayment;
+                            this.term=response.data.data.term;
+                        } else {
+                            this.errors.error = true;
+                            this.errors.message = response.data.errors.message;
                         }
                     });
                 console.log(this.info);
                 console.log('end query');
-            }
+            },
         }
     }
 </script>
